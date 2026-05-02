@@ -1,5 +1,3 @@
-import { match } from 'node:assert/strict';
-
 enum Choice {
   ROCK = 0,
   PAPER = 1,
@@ -61,13 +59,15 @@ class GameMatch {
     this.rounds.push(round);
   }
   get winner() {
-    const state = new Map();
+    let p1Score = 0;
+    let p2Score = 0;
     this.rounds.forEach((round) => {
-      if (state.get(round.winner) == undefined) state.set(round.winner, 0);
-      else state.set(round.winner, state.get(round.winner) + 1);
+      if (round.winner != null && round.winner === this.player1) p1Score++;
+      if (round.winner != null && round.winner === this.player2) p2Score++;
     });
-    if (state.get(this.player1) == state.get(this.player2)) return null;
-    if (state.get(this.player1) > state.get(this.player2)) return this.player1;
+    console.log({ p1Score, p2Score });
+    if (p1Score == p2Score) return null;
+    if (p1Score > p2Score) return this.player1;
     else return this.player2;
   }
 }
@@ -105,6 +105,24 @@ describe('Game', () => {
       match.playRound();
       match.oneMoreRound();
       match.playRound();
+    });
+    it('Should get a winner', () => {
+      player1.setChoice(Choice.PAPER);
+      player2.setChoice(Choice.ROCK);
+
+      match.playRound();
+
+      player1.setChoice(Choice.ROCK);
+      player2.setChoice(Choice.PAPER);
+
+      match.playRound();
+
+      player1.setChoice(Choice.SCISSORS);
+      player2.setChoice(Choice.PAPER);
+
+      match.playRound();
+
+      expect(match.winner).toBe(player1);
     });
   });
   describe('Round', () => {
