@@ -28,7 +28,7 @@ export class GameGateway {
       const gameMatch = await this.gameMatchService.createMatch(playerUsername);
       client.join('match-' + gameMatch.id);
       return {
-        event: 'game:match-room-created',
+        status: 'ok',
         data: {
           gameMatch: {
             id: gameMatch.id,
@@ -43,6 +43,7 @@ export class GameGateway {
       };
     }
   }
+
   @SubscribeMessage('game:join-match-room')
   async joinMatchRoom(
     @MessageBody('gameMatchId') gameMatchId: string,
@@ -55,17 +56,32 @@ export class GameGateway {
         gameMatchId,
       );
       client.join('match-' + gameMatchId);
-      this.server.to('match-' + gameMatchId).emit('game:user-joined-to-match', {
+      this.notifyGameMatchRoom(gameMatchId, {
         status: 'ok',
-        data: { message: 'User ' + playerUsername + ' join to room' },
+        message: 'User ' + playerUsername + ' join to room',
       });
+      this.reportRoomMatchInfo(gameMatchId);
+      return { status: 'ok' };
     } catch (error) {
-      return {
+      this.notifyGameMatchRoom(gameMatchId, {
         status: 'error',
-        data: {
-          message: 'User cannot join to room because ' + error.message,
-        },
-      };
+        message: 'User cannot join to room because ' + error.message,
+      });
+      return { status: 'error' };
     }
+  }
+  private async reportRoomMatchInfo(roomMatchId: string) {
+    const gameMatch = await this.gameMatchService.getGameMatch(roomMatchId);
+    this.server
+      .to('match-' + roomMatchId)
+      .emit('game:room-info-updated', { data: { ...gameMatch?.info } });
+  }
+  private notifyGameMatchRoom(
+    gameMatchId: string,
+    { status, message }: { status: string; message: string },
+  ) {
+    this.server
+      .to('match-' + gameMatchId)
+      .emit('game:room-match-notifications', { status, data: { message } });
   }
 }

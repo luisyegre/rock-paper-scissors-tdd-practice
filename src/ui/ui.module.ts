@@ -8,13 +8,11 @@ import { join } from 'path';
 export class UiModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(
-        (req: any, res: any, next: any) => {
-          const expressStatic = require('express').static;
-          const staticMiddleware = expressStatic(join(__dirname, 'public'));
-          staticMiddleware(req, res, next);
-        },
-      )
+      .apply((req: any, res: any, next: any) => {
+        const expressStatic = require('express').static;
+        const staticMiddleware = expressStatic(join(__dirname, 'public'));
+        staticMiddleware(req, res, next);
+      })
       .forRoutes('public');
   }
 }

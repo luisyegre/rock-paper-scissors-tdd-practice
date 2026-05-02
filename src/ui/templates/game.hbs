@@ -13,11 +13,12 @@
     <div id="game-info">
       <p>ID: <span id="match-id"></span></p>
       <p>PLAYERS: <span id="players-count">0</span>/2</p>
+      <p id="players-list" class="players-list"></p>
       <p>ROUND: <span id="current-round">0</span>/3</p>
     </div>
 
     <div id="waiting-section">
-      <h2>WAITING FOR OPPONENT...</h2>
+      <h2 id="waiting-text">WAITING FOR OPPONENT...</h2>
       <div class="spinner"></div>
     </div>
 
@@ -39,6 +40,7 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/public/js/matchStorage.js"></script>
   <script src="/public/js/game.js"></script>
 </body>
 </html>

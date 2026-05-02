@@ -21,7 +21,6 @@ export class GameMatch {
     this.matchRounds = rounds;
     return this;
   }
-
   oneMoreRound() {
     this.matchRounds += 1;
   }
@@ -58,5 +57,16 @@ export class GameMatch {
     if (p1Score == p2Score) return null;
     if (p1Score > p2Score) return this.player1;
     else return this.player2;
+  }
+  get info() {
+    return {
+      id: this.id,
+      master: this.player1?.username,
+      players: [this.player2?.username],
+      rounds: {
+        played: this.rounds.length,
+        results: this.rounds.map((round) => round.winner?.username),
+      },
+    };
   }
 }

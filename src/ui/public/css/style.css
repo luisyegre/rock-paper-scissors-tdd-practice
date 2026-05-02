@@ -265,6 +265,36 @@ button:disabled {
   text-shadow: 0 0 8px var(--neon-yellow);
 }
 
+.players-list {
+  margin: 0.5rem 0;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.player-tag {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border: 2px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  font-size: 0.5rem;
+  text-shadow: 0 0 5px var(--neon-cyan);
+  animation: player-pulse 2s ease-in-out infinite;
+}
+
+.player-master {
+  border-color: var(--neon-yellow);
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px var(--neon-yellow);
+  box-shadow: 0 0 10px rgba(255, 230, 0, 0.3);
+}
+
+@keyframes player-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
 #waiting-section {
   text-align: center;
   padding: 2rem;

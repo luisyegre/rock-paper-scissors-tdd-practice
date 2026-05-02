@@ -1,5 +1,5 @@
 const socket = io('/game');
-let currentUsername = null;
+let currentUsername = Session.get();
 
 const registerForm = document.getElementById('register-form');
 const registerMessage = document.getElementById('register-message');
@@ -11,10 +11,16 @@ const joinMatchBtn = document.getElementById('join-match-btn');
 const matchIdInput = document.getElementById('match-id-input');
 const lobbyMessage = document.getElementById('lobby-message');
 
+if (currentUsername) {
+  displayUsername.textContent = currentUsername;
+  registerSection.classList.add('hidden');
+  lobbySection.classList.remove('hidden');
+}
+
 registerForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('username-input').value.trim();
-  
+
   if (!username) {
     showRegisterMessage('Username is required', 'error');
     return;
@@ -33,6 +39,7 @@ registerForm.addEventListener('submit', async (e) => {
     }
 
     currentUsername = username;
+    Session.save(username);
     displayUsername.textContent = username;
     registerSection.classList.add('hidden');
     lobbySection.classList.remove('hidden');
@@ -66,19 +73,25 @@ createMatchBtn.addEventListener('click', () => {
     return;
   }
 
-  socket.emit('game:create-match-room', { playerUsername: currentUsername }, (response) => {
-    if (response.status === 'error') {
-      showLobbyMessage(response.data.message, 'error');
-    } else {
-      const matchId = response.data.gameMatch.id;
-      window.location.href = '/game?matchId=' + matchId + '&username=' + currentUsername;
-    }
-  });
+  socket.emit(
+    'game:create-match-room',
+    { playerUsername: currentUsername },
+    (response) => {
+      if (response.status === 'error') {
+        showLobbyMessage(response.data.message, 'error');
+      } else {
+        const matchId = response.data.gameMatch.id;
+        MatchStorage.createMatch(matchId, currentUsername);
+        window.location.href =
+          '/game?matchId=' + matchId + '&username=' + currentUsername;
+      }
+    },
+  );
 });
 
-joinMatchBtn.addEventListener('click', async () => {
+joinMatchBtn.addEventListener('click', () => {
   const matchId = matchIdInput.value.trim();
-  
+
   if (!matchId) {
     showLobbyMessage('Match ID is required', 'error');
     return;
@@ -89,22 +102,34 @@ joinMatchBtn.addEventListener('click', async () => {
     return;
   }
 
-  try {
-    socket.emit('game:join-match-room', { 
-      gameMatchId: matchId, 
-      playerUsername: currentUsername 
-    });
-  } catch (error) {
-    showLobbyMessage('Cannot join match: ' + error.message, 'error');
+  MatchStorage.createMatch(matchId, null);
+  socket.emit(
+    'game:join-match-room',
+    {
+      gameMatchId: matchId,
+      playerUsername: currentUsername,
+    },
+    (response) => {
+      if (response.status == 'ok') {
+        window.location.href =
+          '/game?matchId=' + matchId + '&username=' + currentUsername;
+      }
+    },
+  );
+});
+
+socket.on('game:room-match-notifications', (data) => {
+  if (data.status === 'error') {
+    showLobbyMessage(data.data.message, 'error');
   }
 });
 
-socket.on('game:user-joined-to-match', (data) => {
-  if (data.status === 'ok') {
-    const params = new URLSearchParams(window.location.search);
-    const matchId = params.get('matchId');
-    if (matchId) {
-      window.location.href = '/game?matchId=' + matchId + '&username=' + currentUsername;
-    }
+socket.on('game:room-info-updated', (data) => {
+  const params = new URLSearchParams(window.location.search);
+  const matchId = params.get('matchId');
+
+  if (matchId && data.data) {
+    MatchStorage.syncFromServer(matchId, data.data);
+    const players = MatchStorage.getPlayers(matchId);
   }
 });

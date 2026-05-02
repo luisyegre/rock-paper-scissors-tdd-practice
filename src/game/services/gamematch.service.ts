@@ -10,6 +10,9 @@ export class GameMatchService {
     private playerRepository: PlayerRepository,
     private gameMatchRepository: GameMatchRepository,
   ) {}
+  getGameMatch(id: string) {
+    return this.gameMatchRepository.find(id);
+  }
   async createMatch(creatorUsername: string): Promise<GameMatch> {
     const playerCreator =
       await this.playerRepository.findByUsername(creatorUsername);
