@@ -99,6 +99,13 @@ describe('Game', () => {
         expect(error.message).toMatch(/rounds/);
       }
     });
+    it('Should not fail if the round number is increments', () => {
+      match.playRound();
+      match.playRound();
+      match.playRound();
+      match.oneMoreRound();
+      match.playRound();
+    });
   });
   describe('Round', () => {
     test('Winner should be null when p1 and p2 choice the same', () => {
