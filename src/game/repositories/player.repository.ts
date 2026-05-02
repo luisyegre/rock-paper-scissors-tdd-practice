@@ -3,7 +3,7 @@ import { Player } from '../entities/player.entity';
 
 @Injectable()
 export class PlayerRepository {
-  players: Map<string, Player>;
+  players: Map<string, Player> = new Map();
   create(username: string): Promise<Player> {
     return new Promise((resolve) => {
       const player = new Player(username);
@@ -11,11 +11,10 @@ export class PlayerRepository {
       resolve(player);
     });
   }
-  findByUsername(username: string): Promise<Player> {
-    return new Promise((resolve, reject) => {
+  findByUsername(username: string): Promise<Player | null> {
+    return new Promise((resolve) => {
       const player = this.players.get(username);
-      if (player === undefined) reject(new Error('player not found'));
-      else resolve(player);
+      resolve(player || null);
     });
   }
 }
