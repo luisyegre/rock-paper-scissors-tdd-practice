@@ -1,90 +1,117 @@
-enum Choise {
+enum Choice {
   ROCK = 0,
   PAPER = 1,
-  SCISSOR = 2,
+  SCISSORS = 2,
 }
 
 class Player {
-  constructor(private _choise?: Choise) {}
-  setChoice(choise: Choise) {
-    this._choise = choise;
+  constructor(private _choice?: Choice) {}
+  setChoice(choice: Choice) {
+    this._choice = choice;
   }
-  get choise() {
-    return this._choise;
+  get choice() {
+    return this._choice;
   }
 }
-// interface GameRoundResult {
-
-// }
 class GameRound {
-  constructor(private gameMatch: GameMatch) {}
+  private _winner: Player | null;
+  constructor(
+    private player1: Player,
+    private player2: Player,
+  ) {}
   defineWinner() {
     const winCases = {
-      [Choise.ROCK]: Choise.SCISSOR,
-      [Choise.PAPER]: Choise.ROCK,
-      [Choise.SCISSOR]: Choise.PAPER,
+      [Choice.ROCK]: Choice.SCISSORS,
+      [Choice.PAPER]: Choice.ROCK,
+      [Choice.SCISSORS]: Choice.PAPER,
     };
-    if (
-      this.gameMatch.player1.choise == undefined ||
-      this.gameMatch.player2.choise == undefined
-    ) {
-      throw new Error('Players shuld have a choise');
-    }
-    if (this.gameMatch.player1.choise == this.gameMatch.player2.choise)
-      return null;
-    if (
-      this.gameMatch.player2.choise === winCases[this.gameMatch.player1.choise]
-    )
-      return this.gameMatch.player1;
-    else return this.gameMatch.player2;
+    if (this.player1.choice == undefined || this.player2.choice == undefined)
+      throw new Error('Player should have a coise');
+
+    if (this.player1.choice == this.player2.choice) this._winner = null;
+    else if (this.player2.choice == winCases[this.player1.choice])
+      this._winner = this.player1;
+    else this._winner = this.player2;
+
+    return this._winner;
+  }
+  get winner() {
+    return this._winner;
   }
 }
 
 class GameMatch {
+  rounds: GameRound[];
   constructor(
     readonly player1: Player,
     readonly player2: Player,
+    private matchRounds: number,
   ) {}
-  // playRound() {
-  //   const round = new GameRound(this);
-  //   const winner = round.defineWinner();
-  // }
+  oneMoreRound() {
+    this.matchRounds += 1;
+  }
+  playRound() {
+    if (this.rounds.length >= this.matchRounds)
+      throw new Error(`Cannot play more than ${this.matchRounds} rounds`);
+
+    const round = new GameRound(this.player1, this.player2);
+    round.defineWinner();
+    this.rounds.push(round);
+  }
+  get winner() {
+    const state = new Map();
+    this.rounds.forEach((round) => {
+      if (state.get(round.winner) == undefined) state.set(round.winner, 0);
+      else state.set(round.winner, state.get(round.winner) + 1);
+    });
+    if (state.get(this.player1) == state.get(this.player2)) return null;
+    if (state.get(this.player1) > state.get(this.player2)) return this.player1;
+    else return this.player2;
+  }
 }
 
-describe('Game', () => {
+describe('Game Rounds', () => {
   let player1: Player;
   let player2: Player;
-
+  let rounds: number;
   beforeAll(() => {
-    player1 = new Player(Choise.ROCK);
-    player2 = new Player(Choise.SCISSOR);
+    player1 = new Player();
+    player2 = new Player();
   });
-  it('Should have two players', () => {
-    expect(player1).toBeDefined();
-    expect(player2).toBeDefined();
+  beforeEach(() => {
+    rounds = 3;
+    player1.setChoice(Choice.ROCK);
+    player2.setChoice(Choice.ROCK);
   });
-  test('Players should have a choice', () => {
-    expect(player1.choise).toBeDefined();
-    expect(player2.choise).toBeDefined();
+
+  test('Winner should be null when p1 and p2 choice the same', () => {
+    player1.setChoice(Choice.ROCK);
+    player2.setChoice(Choice.ROCK);
+    const winner = new GameRound(player1, player2).defineWinner();
+    expect(winner).toBe(null);
   });
   test('Rock should win scissors', () => {
-    const round = new GameRound(new GameMatch(player1, player2));
-    const winner = round.defineWinner();
+    player2.setChoice(Choice.SCISSORS);
+    const winner = new GameRound(player1, player2).defineWinner();
     expect(winner).toBe(player1);
   });
   test('Scissors should win paper', () => {
-    player1.setChoice(Choise.SCISSOR);
-    player2.setChoice(Choise.PAPER);
-    const round = new GameRound(new GameMatch(player1, player2));
-    const winner = round.defineWinner();
+    player1.setChoice(Choice.SCISSORS);
+    player2.setChoice(Choice.PAPER);
+    const winner = new GameRound(player1, player2).defineWinner();
     expect(winner).toBe(player1);
   });
 
   test('Paper should win rock', () => {
-    player1.setChoice(Choise.PAPER);
-    player2.setChoice(Choise.ROCK);
-    const round = new GameRound(new GameMatch(player1, player2));
-    const winner = round.defineWinner();
+    player1.setChoice(Choice.PAPER);
+    player2.setChoice(Choice.ROCK);
+    const winner = new GameRound(player1, player2).defineWinner();
     expect(winner).toBe(player1);
+  });
+  test('Player 2 should win', () => {
+    player1.setChoice(Choice.ROCK);
+    player2.setChoice(Choice.PAPER);
+    const winner = new GameRound(player1, player2).defineWinner();
+    expect(winner).toBe(player2);
   });
 });
