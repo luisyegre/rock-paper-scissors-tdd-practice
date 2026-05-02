@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Room</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>> MATCH IN PROGRESS <</h1>
+    
+    <div id="game-info">
+      <p>ID: <span id="match-id"></span></p>
+      <p>PLAYERS: <span id="players-count">0</span>/2</p>
+      <p>ROUND: <span id="current-round">0</span>/3</p>
+    </div>
+
+    <div id="waiting-section">
+      <h2>WAITING FOR OPPONENT...</h2>
+      <div class="spinner"></div>
+    </div>
+
+    <div id="game-section" class="hidden">
+      <h2>CHOOSE YOUR MOVE!</h2>
+      <div class="choices">
+        <button class="choice-btn" data-choice="0">ROCK</button>
+        <button class="choice-btn" data-choice="1">PAPER</button>
+        <button class="choice-btn" data-choice="2">SCISSORS</button>
+      </div>
+      <p id="game-message" class="message"></p>
+    </div>
+
+    <div id="results-section" class="hidden">
+      <h2>*** MATCH RESULTS ***</h2>
+      <div id="results-content"></div>
+      <button id="play-again-btn">>> PLAY AGAIN <<</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/public/js/game.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rock Paper Scissors</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>ROCK PAPER SCISSORS</h1>
+    
+    <div id="register-section">
+      <h2>&gt; REGISTER PLAYER</h2>
+      <form id="register-form">
+        <input type="text" id="username-input" placeholder="Enter your username" required>
+        <button type="submit">[ GO ]</button>
+      </form>
+      <p id="register-message" class="message"></p>
+    </div>
+
+    <div id="lobby-section" class="hidden">
+      <h2>* PLAYER: <span id="display-username"></span> *</h2>
+      
+      <div class="lobby-actions">
+        <button id="create-match-btn">>> CREATE MATCH <<</button>
+      </div>
+
+      <div id="join-section">
+        <h3>[ JOIN MATCH ]</h3>
+        <input type="text" id="match-id-input" placeholder="Enter match ID">
+        <button id="join-match-btn">[ ENTER ]</button>
+      </div>
+
+      <p id="lobby-message" class="message"></p>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/public/js/lobby.js"></script>
+</body>
+</html>
