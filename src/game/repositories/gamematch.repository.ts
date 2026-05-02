@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Player } from '../entities/player.entity';
 import { GameMatch } from '../entities/gamematch.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { rejects } from 'node:assert/strict';
 
 @Injectable()
 export class GameMatchRepository {
@@ -16,17 +17,24 @@ export class GameMatchRepository {
     });
   }
   async updatePlayerOne(id: string, player: Player) {
-    const gameMatch = await this.find(id);
+    const gameMatch = await this.findOrFail(id);
     gameMatch?.addPlayerOne(player);
   }
   async updatePlayerTwo(id: string, player: Player) {
-    const gameMatch = await this.find(id);
+    const gameMatch = await this.findOrFail(id);
     gameMatch?.addPlayerTwo(player);
   }
   find(id: string): Promise<GameMatch | null> {
     return new Promise((resolve) => {
       const gameMatch = this.gameMatches.get(id);
       resolve(gameMatch || null);
+    });
+  }
+  findOrFail(id: string): Promise<GameMatch> {
+    return new Promise((resolve, reject) => {
+      const gameMatch = this.gameMatches.get(id);
+      if (!gameMatch) return reject(new Error('game match does not exist'));
+      return resolve(gameMatch);
     });
   }
 }

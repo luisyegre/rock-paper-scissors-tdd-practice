@@ -10,12 +10,22 @@ export class GameMatchService {
     private playerRepository: PlayerRepository,
     private gameMatchRepository: GameMatchRepository,
   ) {}
-  async create(creatorUsername: string): Promise<GameMatch> {
+  async createMatch(creatorUsername: string): Promise<GameMatch> {
     const playerCreator =
       await this.playerRepository.findByUsername(creatorUsername);
-    if (!playerCreator) throw new Error('player not registered');
+    if (!playerCreator) throw new Error('player is not registered');
 
     const gameMatch = await this.gameMatchRepository.create(playerCreator);
+    return gameMatch;
+  }
+  async addUserToMatchRoom(username: string, gameMatchId: string) {
+    const player = await this.playerRepository.findByUsername(username);
+    if (!player) throw new Error('player is not registered');
+
+    const gameMatch = await this.gameMatchRepository.updatePlayerTwo(
+      gameMatchId,
+      player,
+    );
     return gameMatch;
   }
 }
