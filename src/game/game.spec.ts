@@ -1,3 +1,5 @@
+import { match } from 'node:assert/strict';
+
 enum Choice {
   ROCK = 0,
   PAPER = 1,
@@ -41,7 +43,7 @@ class GameRound {
 }
 
 class GameMatch {
-  rounds: GameRound[];
+  rounds: GameRound[] = [];
   constructor(
     readonly player1: Player,
     readonly player2: Player,
@@ -70,9 +72,10 @@ class GameMatch {
   }
 }
 
-describe('Game Rounds', () => {
+describe('Game', () => {
   let player1: Player;
   let player2: Player;
+  let match: GameMatch;
   let rounds: number;
   beforeAll(() => {
     player1 = new Player();
@@ -82,36 +85,51 @@ describe('Game Rounds', () => {
     rounds = 3;
     player1.setChoice(Choice.ROCK);
     player2.setChoice(Choice.ROCK);
+    match = new GameMatch(player1, player2, rounds);
   });
+  describe('Match', () => {
+    it('Should fail if try to play a round whithout inccrement it', () => {
+      expect.assertions(1);
+      try {
+        match.playRound();
+        match.playRound();
+        match.playRound();
+        match.playRound();
+      } catch (error) {
+        expect(error.message).toMatch(/rounds/);
+      }
+    });
+  });
+  describe('Round', () => {
+    test('Winner should be null when p1 and p2 choice the same', () => {
+      player1.setChoice(Choice.ROCK);
+      player2.setChoice(Choice.ROCK);
+      const winner = new GameRound(player1, player2).defineWinner();
+      expect(winner).toBe(null);
+    });
+    test('Rock should win scissors', () => {
+      player2.setChoice(Choice.SCISSORS);
+      const winner = new GameRound(player1, player2).defineWinner();
+      expect(winner).toBe(player1);
+    });
+    test('Scissors should win paper', () => {
+      player1.setChoice(Choice.SCISSORS);
+      player2.setChoice(Choice.PAPER);
+      const winner = new GameRound(player1, player2).defineWinner();
+      expect(winner).toBe(player1);
+    });
 
-  test('Winner should be null when p1 and p2 choice the same', () => {
-    player1.setChoice(Choice.ROCK);
-    player2.setChoice(Choice.ROCK);
-    const winner = new GameRound(player1, player2).defineWinner();
-    expect(winner).toBe(null);
-  });
-  test('Rock should win scissors', () => {
-    player2.setChoice(Choice.SCISSORS);
-    const winner = new GameRound(player1, player2).defineWinner();
-    expect(winner).toBe(player1);
-  });
-  test('Scissors should win paper', () => {
-    player1.setChoice(Choice.SCISSORS);
-    player2.setChoice(Choice.PAPER);
-    const winner = new GameRound(player1, player2).defineWinner();
-    expect(winner).toBe(player1);
-  });
-
-  test('Paper should win rock', () => {
-    player1.setChoice(Choice.PAPER);
-    player2.setChoice(Choice.ROCK);
-    const winner = new GameRound(player1, player2).defineWinner();
-    expect(winner).toBe(player1);
-  });
-  test('Player 2 should win', () => {
-    player1.setChoice(Choice.ROCK);
-    player2.setChoice(Choice.PAPER);
-    const winner = new GameRound(player1, player2).defineWinner();
-    expect(winner).toBe(player2);
+    test('Paper should win rock', () => {
+      player1.setChoice(Choice.PAPER);
+      player2.setChoice(Choice.ROCK);
+      const winner = new GameRound(player1, player2).defineWinner();
+      expect(winner).toBe(player1);
+    });
+    test('Player 2 should win', () => {
+      player1.setChoice(Choice.ROCK);
+      player2.setChoice(Choice.PAPER);
+      const winner = new GameRound(player1, player2).defineWinner();
+      expect(winner).toBe(player2);
+    });
   });
 });
