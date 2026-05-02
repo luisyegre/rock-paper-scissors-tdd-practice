@@ -72,4 +72,19 @@ describe('Game', () => {
     const winner = round.defineWinner();
     expect(winner).toBe(player1);
   });
+  test('Scissors should win paper', () => {
+    player1.setChoice(Choise.SCISSOR);
+    player2.setChoice(Choise.PAPER);
+    const round = new GameRound(new GameMatch(player1, player2));
+    const winner = round.defineWinner();
+    expect(winner).toBe(player1);
+  });
+
+  test('Paper should win rock', () => {
+    player1.setChoice(Choise.PAPER);
+    player2.setChoice(Choise.ROCK);
+    const round = new GameRound(new GameMatch(player1, player2));
+    const winner = round.defineWinner();
+    expect(winner).toBe(player1);
+  });
 });
