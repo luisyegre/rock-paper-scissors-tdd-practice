@@ -16,7 +16,7 @@ describe('Game', () => {
     rounds = 3;
     player1.setChoice(Choice.ROCK);
     player2.setChoice(Choice.ROCK);
-    match = new GameMatch(player1, player2, rounds);
+    match = new GameMatch('uuid', rounds, player1, player2);
   });
   describe('Match', () => {
     it('Should fail if try to play a round whithout inccrement it', () => {

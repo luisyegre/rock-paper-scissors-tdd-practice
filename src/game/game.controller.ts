@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
-import { PlayerCreationService } from './services/PlayerCreation.service';
+import { Body, Controller, Post } from '@nestjs/common';
+import { PlayerCreationService } from './services/player_creation.service';
 
 @Controller()
 export class GameController {
