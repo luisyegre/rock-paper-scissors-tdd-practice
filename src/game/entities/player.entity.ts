@@ -1,6 +1,7 @@
 import { Choice } from '../enums/choice.enum';
 
 export class Player {
+  private _id: string;
   constructor(
     readonly username: string,
     private _choice?: Choice,

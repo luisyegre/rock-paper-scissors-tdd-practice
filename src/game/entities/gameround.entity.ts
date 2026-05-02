@@ -6,10 +6,7 @@ export class GameRound {
   constructor(
     private player1: Player,
     private player2: Player,
-  ) {
-    // this.player1 = new Player(this.player1.choice);
-    // this.player2 = new Player(this.player2.choice);
-  }
+  ) {}
   defineWinner() {
     const winCases = {
       [Choice.ROCK]: Choice.SCISSORS,
