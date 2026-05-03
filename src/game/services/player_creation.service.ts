@@ -17,4 +17,7 @@ export class PlayerCreationService {
     const player = await this.playerRepository.create(username);
     return player;
   }
+  remove(username: string) {
+    return this.playerRepository.findUserAndRemove(username);
+  }
 }

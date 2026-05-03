@@ -138,7 +138,19 @@ socket.on('game:room-info-updated', (data) => {
   }
 });
 
-logoutBtn.addEventListener('click', () => {
+logoutBtn.addEventListener('click', async () => {
+  if (currentUsername) {
+    try {
+      await fetch('/exit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: currentUsername }),
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  }
   Session.clear();
+  currentUsername = null;
   window.location.reload();
 });

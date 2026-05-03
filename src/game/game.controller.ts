@@ -12,4 +12,11 @@ export class GameController {
   ) {
     return this.playerCreationService.create(username);
   }
+  @Post('/exit')
+  closeGame(
+    @Body()
+    { username }: { username: string },
+  ) {
+    return this.playerCreationService.remove(username);
+  }
 }

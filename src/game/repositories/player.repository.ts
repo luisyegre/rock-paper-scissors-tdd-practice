@@ -17,4 +17,10 @@ export class PlayerRepository {
       resolve(player || null);
     });
   }
+  findUserAndRemove(username: string): Promise<Player | null> {
+    return new Promise((resolve) => {
+      this.players.delete(username);
+      resolve(null);
+    });
+  }
 }
