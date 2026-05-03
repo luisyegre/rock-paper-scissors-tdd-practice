@@ -7,6 +7,7 @@ const lobbySection = document.getElementById('lobby-section');
 const registerSection = document.getElementById('register-section');
 const displayUsername = document.getElementById('display-username');
 const createMatchBtn = document.getElementById('create-match-btn');
+const logoutBtn = document.getElementById('logout-btn');
 const joinMatchBtn = document.getElementById('join-match-btn');
 const matchIdInput = document.getElementById('match-id-input');
 const lobbyMessage = document.getElementById('lobby-message');
@@ -131,5 +132,13 @@ socket.on('game:room-info-updated', (data) => {
   if (matchId && data.data) {
     MatchStorage.syncFromServer(matchId, data.data);
     const players = MatchStorage.getPlayers(matchId);
+    if (players.length >= 2 && currentUsername) {
+      window.location.href = '/game?matchId=' + matchId + '&username=' + currentUsername;
+    }
   }
+});
+
+logoutBtn.addEventListener('click', () => {
+  Session.clear();
+  window.location.reload();
 });

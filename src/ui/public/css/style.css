@@ -230,6 +230,24 @@ button:disabled {
 .lobby-actions {
   margin: 1.5rem 0;
   text-align: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.logout-btn {
+  border-color: #ff3333;
+  color: #ff6666;
+  box-shadow: 4px 4px 0 #660000;
+  text-shadow: 0 0 5px #ff3333;
+}
+
+.logout-btn:hover {
+  background: #ff3333;
+  color: var(--bg-dark);
+  box-shadow: 2px 2px 0 #660000;
+  text-shadow: none;
 }
 
 #join-section {
@@ -293,6 +311,45 @@ button:disabled {
 @keyframes player-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.8; }
+}
+
+.round-notification {
+  padding: 0.75rem;
+  border: 3px solid;
+  text-align: center;
+  font-size: 0.6rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  animation: notif-slide 0.3s ease-out;
+}
+
+.round-notification.win {
+  background: rgba(57, 255, 20, 0.1);
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+  text-shadow: 0 0 8px var(--neon-green);
+}
+
+.round-notification.lose {
+  background: rgba(255, 45, 149, 0.1);
+  border-color: var(--neon-pink);
+  color: var(--neon-pink);
+  box-shadow: 0 0 15px rgba(255, 45, 149, 0.3);
+  text-shadow: 0 0 8px var(--neon-pink);
+}
+
+.round-notification.tie {
+  background: rgba(255, 230, 0, 0.1);
+  border-color: var(--neon-yellow);
+  color: var(--neon-yellow);
+  box-shadow: 0 0 15px rgba(255, 230, 0, 0.3);
+  text-shadow: 0 0 8px var(--neon-yellow);
+}
+
+@keyframes notif-slide {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 #waiting-section {
@@ -411,6 +468,7 @@ button:disabled {
 #results-content table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 1rem;
 }
 
 #results-content th,
@@ -434,6 +492,58 @@ button:disabled {
 
 #results-content tr:nth-child(even) td {
   background: rgba(255, 255, 255, 0.03);
+}
+
+.score-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.player-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.score-name {
+  font-size: 0.5rem;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 5px var(--neon-cyan);
+}
+
+.score-num {
+  font-size: 1.5rem;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 15px var(--neon-yellow);
+}
+
+.score-divider {
+  font-size: 1rem;
+  color: var(--text-dim);
+}
+
+.winner-announcement {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--neon-green);
+  text-shadow: 0 0 15px var(--neon-green);
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 2px solid var(--neon-green);
+  animation: winner-flash 0.5s ease-in-out infinite alternate;
+}
+
+.winner-announcement::-prefix-text {
+  color: var(--neon-yellow);
+}
+
+@keyframes winner-flash {
+  0% { box-shadow: 0 0 5px var(--neon-green); }
+  100% { box-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green); }
 }
 
 #play-again-btn {

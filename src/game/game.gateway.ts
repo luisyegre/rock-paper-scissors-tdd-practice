@@ -7,6 +7,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameMatchService } from './services/gamematch.service';
+import { Choice } from './enums/choice.enum';
+import { GameRoomNotifier } from './game_room_notifier.gateway';
 
 // enum RoomType {
 //   PUBLIC = 'public',
@@ -15,7 +17,10 @@ import { GameMatchService } from './services/gamematch.service';
 
 @WebSocketGateway({ namespace: 'game' })
 export class GameGateway {
-  constructor(private gameMatchService: GameMatchService) {}
+  constructor(
+    private gameMatchService: GameMatchService,
+    private gameRoomNotifier: GameRoomNotifier,
+  ) {}
   @WebSocketServer()
   server: Server;
 
@@ -56,32 +61,49 @@ export class GameGateway {
         gameMatchId,
       );
       client.join('match-' + gameMatchId);
-      this.notifyGameMatchRoom(gameMatchId, {
+      this.gameRoomNotifier.notifyGameMatchRoom(gameMatchId, {
         status: 'ok',
         message: 'User ' + playerUsername + ' join to room',
       });
-      this.reportRoomMatchInfo(gameMatchId);
+      this.gameRoomNotifier.reportRoomMatchInfo(gameMatchId);
       return { status: 'ok' };
     } catch (error) {
-      this.notifyGameMatchRoom(gameMatchId, {
+      this.gameRoomNotifier.notifyGameMatchRoom(gameMatchId, {
         status: 'error',
         message: 'User cannot join to room because ' + error.message,
       });
       return { status: 'error' };
     }
   }
-  private async reportRoomMatchInfo(roomMatchId: string) {
-    const gameMatch = await this.gameMatchService.getGameMatch(roomMatchId);
-    this.server
-      .to('match-' + roomMatchId)
-      .emit('game:room-info-updated', { data: { ...gameMatch?.info } });
-  }
-  private notifyGameMatchRoom(
-    gameMatchId: string,
-    { status, message }: { status: string; message: string },
+  @SubscribeMessage('game:choose-move')
+  async chooseMove(
+    @MessageBody('matchId') matchId: string,
+    @MessageBody('username') username: string,
+    @MessageBody('moveChoise') choise: Choice,
   ) {
-    this.server
-      .to('match-' + gameMatchId)
-      .emit('game:room-match-notifications', { status, data: { message } });
+    const gameMatch = await this.gameMatchService.getGameMatch(matchId);
+    try {
+      await this.gameMatchService.setPlayerMove(username, choise);
+      this.gameRoomNotifier.notifyGameMatchRoom(matchId, {
+        status: 'player-choose',
+        message: username + ' choose the move',
+        data: {
+          user: username,
+        },
+      });
+      if (gameMatch?.canPlayRound()) {
+        gameMatch.playRound();
+        this.gameRoomNotifier.notifyGameMatchRoom(matchId, {
+          status: 'round-ended',
+          message: 'The round is ended',
+        });
+        this.gameRoomNotifier.reportRoomMatchInfo(matchId);
+      }
+    } catch (error) {
+      return {
+        status: 'error',
+        message: error?.message,
+      };
+    }
   }
 }

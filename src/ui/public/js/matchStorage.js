@@ -26,43 +26,32 @@ const MatchStorage = {
     const match = this.matches.get(matchId);
     if (!match) return null;
 
-    match.master = serverInfo.master;
-    match.player1 = serverInfo.master;
-    match.player2 = serverInfo.players && serverInfo.players[0] ? serverInfo.players[0] : null;
+    if (serverInfo.master) {
+      match.master = serverInfo.master;
+    }
+
+    if (serverInfo.master && !match.player1) {
+      match.player1 = serverInfo.master;
+    }
+
+    if (serverInfo.players && serverInfo.players.length > 0 && serverInfo.players[0]) {
+      match.player2 = serverInfo.players[0];
+    }
 
     if (serverInfo.rounds) {
-      match.roundsPlayed = serverInfo.rounds.played || 0;
+      const newPlayed = serverInfo.rounds.played || 0;
+      const newResults = serverInfo.rounds.results || [];
+
+      for (let i = match.roundsPlayed; i < newPlayed; i++) {
+        match.roundResults.push(newResults[i] || null);
+      }
+
+      match.roundsPlayed = newPlayed;
     }
 
     match.isPlaying = match.player1 !== null && match.player2 !== null;
 
     return match;
-  },
-
-  addPlayer(matchId, username) {
-    const match = this.matches.get(matchId);
-    if (!match) return null;
-
-    if (match.player1 && match.player1 === username) return match;
-    if (match.player2 && match.player2 === username) return match;
-
-    if (!match.player1) {
-      match.player1 = username;
-    } else if (!match.player2) {
-      match.player2 = username;
-    }
-
-    if (match.player1 && match.player2) {
-      match.isPlaying = true;
-    }
-
-    return match;
-  },
-
-  setMaster(matchId, username) {
-    const match = this.matches.get(matchId);
-    if (!match) return;
-    match.master = username;
   },
 
   getPlayers(matchId) {

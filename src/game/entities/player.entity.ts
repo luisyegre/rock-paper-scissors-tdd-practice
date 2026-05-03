@@ -8,6 +8,9 @@ export class Player {
   setChoice(choice: Choice) {
     this._choice = choice;
   }
+  cleanChoice() {
+    this._choice = undefined;
+  }
   get choice() {
     return this._choice;
   }

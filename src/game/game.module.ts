@@ -5,6 +5,7 @@ import { GameController } from './game.controller';
 import { GameGateway } from './game.gateway';
 import { GameMatchService } from './services/gamematch.service';
 import { GameMatchRepository } from './repositories/gamematch.repository';
+import { GameRoomNotifier } from './game_room_notifier.gateway';
 
 @Module({
   providers: [
@@ -14,6 +15,7 @@ import { GameMatchRepository } from './repositories/gamematch.repository';
     PlayerCreationService,
     GameMatchService,
     GameMatchRepository,
+    GameRoomNotifier,
   ],
   controllers: [GameController],
 })

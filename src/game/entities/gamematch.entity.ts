@@ -34,8 +34,15 @@ export class GameMatch {
       new Player(this.player1.username, this.player1.choice),
       new Player(this.player2.username, this.player2.choice),
     );
+    this.player1.cleanChoice();
+    this.player2.cleanChoice();
     round.defineWinner();
     this.rounds.push(round);
+  }
+  canPlayRound(): boolean {
+    return (
+      this.player1?.choice != undefined && this.player2?.choice != undefined
+    );
   }
   get winner() {
     let p1Score = 0;

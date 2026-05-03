@@ -3,6 +3,7 @@ import { GameMatch } from '../entities/gamematch.entity';
 // import { Player } from '../entities/player.entity';
 import { GameMatchRepository } from '../repositories/gamematch.repository';
 import { PlayerRepository } from '../repositories/player.repository';
+import { Choice } from '../enums/choice.enum';
 
 @Injectable()
 export class GameMatchService {
@@ -17,7 +18,6 @@ export class GameMatchService {
     const playerCreator =
       await this.playerRepository.findByUsername(creatorUsername);
     if (!playerCreator) throw new Error('player is not registered');
-
     const gameMatch = await this.gameMatchRepository.create(playerCreator);
     return gameMatch;
   }
@@ -30,5 +30,10 @@ export class GameMatchService {
       player,
     );
     return gameMatch;
+  }
+  async setPlayerMove(username: string, choice: Choice) {
+    const player = await this.playerRepository.findByUsername(username);
+    if (player == null) throw new Error('user not exist');
+    player.setChoice(choice);
   }
 }
