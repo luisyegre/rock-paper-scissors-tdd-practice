@@ -27,6 +27,8 @@ const playAgainBtn = document.getElementById('play-again-btn');
 const waitingText = document.getElementById('waiting-text');
 const roundNotification = document.getElementById('round-notification');
 const roundNotificationText = document.getElementById('round-notification-text');
+const leaveMatchBtn = document.getElementById('leave-match-btn');
+const leaveMatchBtnTop = document.getElementById('leave-match-btn-top');
 
 matchIdDisplay.textContent = matchId;
 
@@ -120,6 +122,19 @@ socket.on('game:room-info-updated', (data) => {
       opponentChosen = false;
       localRound = match.roundsPlayed;
       currentRoundDisplay.textContent = localRound;
+    }
+
+    if (match.roundsPlayed < prevPlayed) {
+      localRound = 0;
+      hasChosen = false;
+      opponentChosen = false;
+      prevRoundsPlayed = 0;
+      currentRoundDisplay.textContent = '0';
+      resultsSection.classList.add('hidden');
+      gameSection.classList.remove('hidden');
+      choiceButtons.forEach((b) => (b.disabled = false));
+      gameMessage.textContent = 'Choose your move!';
+      return;
     }
 
     if (match.roundsPlayed >= MATCH_ROUNDS) {
@@ -219,8 +234,22 @@ function showResults() {
 }
 
 playAgainBtn.addEventListener('click', () => {
-  window.location.href = '/';
+  socket.emit('game:replay', {
+    gameMatchId: matchId,
+    playerUsername: username,
+  });
 });
+
+function leaveMatch() {
+  socket.emit('game:leave', {
+    gameMatchId: matchId,
+    playerUsername: username,
+  });
+  window.location.href = '/';
+}
+
+leaveMatchBtn.addEventListener('click', leaveMatch);
+leaveMatchBtnTop.addEventListener('click', leaveMatch);
 
 renderPlayers();
 updateWaitingState();

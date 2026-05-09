@@ -24,6 +24,11 @@ export class GameMatch {
   oneMoreRound() {
     this.matchRounds += 1;
   }
+  reset() {
+    this.rounds = [];
+    this.player1?.cleanChoice();
+    this.player2?.cleanChoice();
+  }
   playRound() {
     if (this.rounds.length >= this.matchRounds)
       throw new Error(`Cannot play more than ${this.matchRounds} rounds`);

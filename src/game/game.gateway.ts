@@ -49,6 +49,48 @@ export class GameGateway {
     }
   }
 
+  @SubscribeMessage('game:replay')
+  async replay(
+    @MessageBody('gameMatchId') gameMatchId: string,
+    @MessageBody('playerUsername') playerUsername: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const gameMatch = await this.gameMatchService.getGameMatch(gameMatchId);
+      if (!gameMatch) throw new Error('Match not found');
+      gameMatch.reset();
+      client.join('match-' + gameMatchId);
+      client.emit('game:room-info-updated', { data: { ...gameMatch.info } });
+      return { status: 'ok' };
+    } catch (error) {
+      return {
+        status: 'error',
+        data: { message: error.message },
+      };
+    }
+  }
+  @SubscribeMessage('game:leave')
+  async leave(
+    @MessageBody('gameMatchId') gameMatchId: string,
+    @MessageBody('playerUsername') playerUsername: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const gameMatch = await this.gameMatchService.getGameMatch(gameMatchId);
+      if (!gameMatch) throw new Error('Match not found');
+      gameMatch.reset();
+
+      client.leave('match-' + gameMatchId);
+      client.emit('game:room-info-updated', { data: { ...gameMatch.info } });
+
+      return { status: 'ok' };
+    } catch (error) {
+      return {
+        status: 'error',
+        data: { message: error.message },
+      };
+    }
+  }
   @SubscribeMessage('game:join-match-room')
   async joinMatchRoom(
     @MessageBody('gameMatchId') gameMatchId: string,

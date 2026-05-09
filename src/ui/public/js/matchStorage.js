@@ -42,6 +42,10 @@ const MatchStorage = {
       const newPlayed = serverInfo.rounds.played || 0;
       const newResults = serverInfo.rounds.results || [];
 
+      if (newPlayed < match.roundsPlayed) {
+        match.roundResults = [];
+      }
+
       for (let i = match.roundsPlayed; i < newPlayed; i++) {
         match.roundResults.push(newResults[i] || null);
       }
