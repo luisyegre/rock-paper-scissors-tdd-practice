@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Player } from '../entities/player.entity';
 import { GameMatch } from '../entities/gamematch.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { rejects } from 'node:assert/strict';
 
 @Injectable()
 export class GameMatchRepository {

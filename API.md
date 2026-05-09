@@ -249,3 +249,46 @@ Se evalúa la ronda y se emiten resultados
        ▼
 Ganador global: quien gane más rondas
 ```
+
+---
+
+## 5. Chat
+
+El chat ya existe en el backend en `src/chat/chat.gateway.ts` con namespace **`/chat`** separado del namespace `/game` del juego.
+
+### 5.1 Conexión
+
+El frontend usa un socket separado:
+```js
+const chatSocket = io('/chat');
+```
+
+### 5.2 Eventos existentes
+
+| Evento | Dirección | Payload | Descripción |
+|---|---|---|---|
+| `general:send-message` | C→S | `{ payload: { username, message } }` | Enviar mensaje al chat global |
+| `general:new-message` | S→C | `{ username, message }` | Broadcast de mensaje global |
+| `match:join` | C→S | `{ payload: { matchId } }` | Unirse a sala de chat de una partida |
+| `match:message-send` | C→S | `{ payload: { username, message, matchId } }` | Enviar mensaje al chat de la sala |
+| `match:new-message` | S→C | `{ username, message }` | Broadcast de mensaje en sala |
+| `sync` | C→S | `{ payload: { room } }` | Solicitar historial (`room` = `"general"` o `"match-{id}"`) |
+| `sync-package` | S→C | `MessagePayload[]` (cada item: `{ sender, message, room }`) | Historial de mensajes |
+
+### 5.3 ⚠️ Fix necesario en el backend
+
+Los handlers `general:send-message` y `match:message-send` **no persisten los mensajes** en `ChatLogRepository`. El `sync` devuelve vacío porque nunca se guardan. Agrega esto en ambos handlers:
+
+```ts
+// En general:send-message:
+this.chatLogRepo.register(
+  { sender: payload.username, message: payload.message, room: 'general' },
+  'general',
+);
+
+// En match:message-send:
+this.chatLogRepo.register(
+  { sender: payload.username, message: payload.message, room: 'match-' + payload.matchId },
+  'match-' + payload.matchId,
+);
+```

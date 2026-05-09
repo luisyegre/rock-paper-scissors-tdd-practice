@@ -6,6 +6,7 @@ import { GameGateway } from './game.gateway';
 import { GameMatchService } from './services/gamematch.service';
 import { GameMatchRepository } from './repositories/gamematch.repository';
 import { GameRoomNotifier } from './game_room_notifier.gateway';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
   providers: [
@@ -18,5 +19,6 @@ import { GameRoomNotifier } from './game_room_notifier.gateway';
     GameRoomNotifier,
   ],
   controllers: [GameController],
+  imports: [ChatModule],
 })
 export class GameModule {}

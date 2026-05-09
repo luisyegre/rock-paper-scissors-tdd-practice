@@ -7,47 +7,25 @@
   <link rel="stylesheet" href="/public/css/style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>> MATCH IN PROGRESS <</h1>
-    
-    <div id="game-info">
-      <p>ID: <span id="match-id"></span></p>
-      <p>PLAYERS: <span id="players-count">0</span>/2</p>
-      <p id="players-list" class="players-list"></p>
-      <p>ROUND: <span id="current-round">0</span>/3</p>
-      <button id="leave-match-btn-top" class="leave-btn"><< LEAVE</button>
-    </div>
+  <rps-app>
+    <rps-chat-sidebar slot="sidebar" id="match-chat" class="hidden"></rps-chat-sidebar>
+    <rps-game-page slot="main"></rps-game-page>
 
-    <div id="round-notification" class="round-notification hidden">
-      <p id="round-notification-text"></p>
-    </div>
+    <span slot="header-info">
+      <span class="label">ID:</span>
+      <span class="value" id="match-id"></span>
+      <span class="label">ROUND:</span>
+      <span class="value" id="current-round">0</span>/3
+    </span>
 
-    <div id="waiting-section">
-      <h2 id="waiting-text">WAITING FOR OPPONENT...</h2>
-      <div class="spinner"></div>
-    </div>
-
-    <div id="game-section" class="hidden">
-      <h2>CHOOSE YOUR MOVE!</h2>
-      <div class="choices">
-        <button class="choice-btn" data-choice="0">ROCK</button>
-        <button class="choice-btn" data-choice="1">PAPER</button>
-        <button class="choice-btn" data-choice="2">SCISSORS</button>
-      </div>
-      <p id="game-message" class="message"></p>
-    </div>
-
-    <div id="results-section" class="hidden">
-      <h2>*** MATCH RESULTS ***</h2>
-      <div id="results-content"></div>
-      <button id="play-again-btn">>> PLAY AGAIN <<</button>
-      <button id="leave-match-btn" class="leave-btn"><< LEAVE MATCH</button>
-    </div>
-  </div>
+    <button slot="header-actions" id="leave-match-btn-top" class="btn-red">LEAVE</button>
+  </rps-app>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/public/js/session.js"></script>
   <script src="/public/js/matchStorage.js"></script>
-  <script src="/public/js/game.js"></script>
+  <script src="/public/js/components/rps-app.js"></script>
+  <script src="/public/js/components/rps-chat-sidebar.js"></script>
+  <script src="/public/js/components/rps-game-page.js"></script>
 </body>
 </html>
