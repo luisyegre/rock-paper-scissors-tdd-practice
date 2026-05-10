@@ -1,0 +1,265 @@
+class RpsGamePage extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot.appendChild(gameTemplate.content.cloneNode(true));
+    this._localRound = 0;
+    this._hasChosen = false;
+    this._opponentChosen = false;
+    this._prevRoundsPlayed = 0;
+    this._matchId = null;
+    this._username = null;
+    this._gameSocket = null;
+    this._MATCH_ROUNDS = 3;
+  }
+
+  connectedCallback() {
+    const params = new URLSearchParams(window.location.search);
+    this._matchId = params.get('matchId');
+    this._username = params.get('username');
+
+    if (!this._matchId || !this._username) {
+      window.location.href = '/';
+      return;
+    }
+
+    MatchStorage.createMatch(this._matchId, this._username);
+    this.shadowRoot.getElementById('match-id-display').textContent = this._matchId;
+
+    const app = this.closest('rps-app');
+    this._gameSocket = app?.sockets?.game;
+
+    const hdrId = document.getElementById('match-id');
+    if (hdrId) hdrId.textContent = this._matchId;
+
+    const sidebar = document.getElementById('match-chat');
+    if (sidebar) {
+      sidebar.setAttribute('match-id', this._matchId);
+      sidebar.setAttribute('username', this._username);
+      sidebar.classList.remove('hidden');
+    }
+
+    this._setupSocket();
+    this._setupChoices();
+    this._setupButtons();
+    this._renderPlayers();
+    this._updateWaiting();
+  }
+
+  _setupSocket() {
+    if (!this._gameSocket) return;
+
+    const onConnect = () => {
+      this._gameSocket.emit('game:join-match-room', {
+        gameMatchId: this._matchId,
+        playerUsername: this._username,
+      });
+      this._renderPlayers();
+      this._updateWaiting();
+    };
+
+    if (this._gameSocket.connected) {
+      onConnect();
+    }
+    this._gameSocket.on('connect', onConnect);
+
+    this._gameSocket.on('game:room-info-updated', (data) => this._onInfoUpdated(data));
+    this._gameSocket.on('game:room-match-notifications', (data) => this._onNotification(data));
+  }
+
+  _onInfoUpdated(data) {
+    if (!data.data) return;
+    const matchBefore = MatchStorage.getMatch(this._matchId);
+    const prevPlayed = matchBefore ? matchBefore.roundsPlayed : 0;
+
+    MatchStorage.syncFromServer(this._matchId, data.data);
+    this._renderPlayers();
+    this._updateWaiting();
+
+    const match = MatchStorage.getMatch(this._matchId);
+    if (!match) return;
+
+    const results = data.data.rounds?.results || [];
+
+    if (match.roundsPlayed > prevPlayed) {
+      this._handleRoundUpdate(match.roundsPlayed, results);
+      this._hasChosen = false;
+      this._opponentChosen = false;
+      this._localRound = match.roundsPlayed;
+      const roundEl = document.getElementById('current-round');
+      if (roundEl) roundEl.textContent = String(this._localRound);
+    }
+
+    if (match.roundsPlayed < prevPlayed) {
+      this._localRound = 0;
+      this._hasChosen = false;
+      this._opponentChosen = false;
+      this._prevRoundsPlayed = 0;
+      const roundEl = document.getElementById('current-round');
+      if (roundEl) roundEl.textContent = '0';
+      this.shadowRoot.getElementById('results-section').classList.add('hidden');
+      this.shadowRoot.getElementById('game-section').classList.remove('hidden');
+      this._enableChoices(true);
+      this._setMsg('Choose your move!');
+      return;
+    }
+
+    if (match.roundsPlayed >= this._MATCH_ROUNDS) {
+      setTimeout(() => this._showResults(), 2500);
+    } else {
+      setTimeout(() => {
+        if (!this._hasChosen) {
+          this._enableChoices(true);
+          this._setMsg('Choose your move!');
+        }
+      }, 2000);
+    }
+  }
+
+  _onNotification(data) {
+    if (data.status === 'player-choose') {
+      if (data.data.user === this._username) {
+        this._hasChosen = true;
+        this._enableChoices(false);
+        this._setMsg('Waiting for opponent...');
+      } else {
+        this._opponentChosen = true;
+        this._setMsg(this._hasChosen ? 'Both chose!' : 'Opponent has chosen. Your turn!');
+      }
+    } else if (data.status === 'round-ended') {
+      this._setMsg('Round ended!');
+    }
+  }
+
+  _handleRoundUpdate(newPlayed, results) {
+    for (let i = this._prevRoundsPlayed; i < newPlayed; i++) {
+      const winner = results[i] || null;
+      const n = i + 1;
+      if (winner === null) this._showNotif('ROUND ' + n + ': TIE!', 'tie');
+      else if (winner === this._username) this._showNotif('ROUND ' + n + ': YOU WIN!', 'win');
+      else this._showNotif('ROUND ' + n + ': ' + winner + ' WINS!', 'lose');
+    }
+    this._prevRoundsPlayed = newPlayed;
+  }
+
+  _showNotif(text, type) {
+    const el = this.shadowRoot.getElementById('round-notif');
+    this.shadowRoot.getElementById('round-text').textContent = text;
+    el.className = 'round-notif ' + type;
+    setTimeout(() => { el.className = 'round-notif hidden'; }, 2000);
+  }
+
+  _setMsg(text) {
+    this.shadowRoot.getElementById('game-message').textContent = text;
+  }
+
+  _enableChoices(enabled) {
+    this.shadowRoot.querySelectorAll('.choice-btn').forEach((b) => {
+      b.disabled = !enabled;
+    });
+  }
+
+  _setupChoices() {
+    this.shadowRoot.querySelectorAll('.choice-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (this._hasChosen || !this._gameSocket) return;
+        const choice = parseInt(btn.dataset.choice);
+        this._gameSocket.emit('game:choose-move', {
+          matchId: this._matchId,
+          username: this._username,
+          moveChoise: choice,
+        });
+        this._hasChosen = true;
+        this._enableChoices(false);
+        this._setMsg('Waiting for opponent...');
+      });
+    });
+  }
+
+  _setupButtons() {
+    this.shadowRoot.getElementById('play-again-btn').addEventListener('click', () => {
+      this._gameSocket?.emit('game:replay', {
+        gameMatchId: this._matchId,
+        playerUsername: this._username,
+      });
+    });
+
+    const leave = () => {
+      this._gameSocket?.emit('game:leave', {
+        gameMatchId: this._matchId,
+        playerUsername: this._username,
+      });
+      window.location.href = '/';
+    };
+
+    this.shadowRoot.getElementById('leave-btn-inline').addEventListener('click', leave);
+    document.getElementById('leave-match-btn-top')?.addEventListener('click', leave);
+  }
+
+  _renderPlayers() {
+    const info = MatchStorage.getPlayersInfo(this._matchId);
+    const container = this.shadowRoot.getElementById('players-list-display');
+    container.innerHTML = '';
+    info.forEach((p) => {
+      const span = document.createElement('span');
+      span.className = 'player-tag' + (p.isMaster ? ' master' : '');
+      span.textContent = p.username + (p.isMaster ? ' [M]' : '');
+      container.appendChild(span);
+    });
+  }
+
+  _updateWaiting() {
+    const playing = MatchStorage.isPlaying(this._matchId);
+    const count = MatchStorage.getPlayerCount(this._matchId);
+    const waiting = this.shadowRoot.getElementById('waiting-section');
+    const game = this.shadowRoot.getElementById('game-section');
+
+    if (playing && count >= 2) {
+      waiting.classList.add('hidden');
+      game.classList.remove('hidden');
+      this._enableChoices(true);
+    } else {
+      game.classList.add('hidden');
+      waiting.classList.remove('hidden');
+      this._enableChoices(false);
+    }
+  }
+
+  _showResults() {
+    const match = MatchStorage.getMatch(this._matchId);
+    if (!match || match.roundsPlayed < this._MATCH_ROUNDS) {
+      setTimeout(() => {
+        if (MatchStorage.getMatch(this._matchId)?.roundsPlayed >= this._MATCH_ROUNDS) this._showResults();
+      }, 300);
+      return;
+    }
+
+    this.shadowRoot.getElementById('game-section').classList.add('hidden');
+    this.shadowRoot.getElementById('results-section').classList.remove('hidden');
+    this.shadowRoot.getElementById('round-notif').classList.add('hidden');
+
+    const info = MatchStorage.getPlayersInfo(this._matchId);
+    const p1 = info[0]?.username || 'Player 1';
+    const p2 = info[1]?.username || 'Player 2';
+    const data = match.roundResults || [];
+    let s1 = 0, s2 = 0;
+    data.forEach((w) => { if (w === p1) s1++; if (w === p2) s2++; });
+
+    let rows = '';
+    for (let i = 0; i < this._MATCH_ROUNDS; i++) {
+      const w = data[i] || null;
+      rows += '<tr><td>' + (i + 1) + '</td><td>' + (!w ? 'TIE' : w) + '</td></tr>';
+    }
+    const champ = s1 > s2 ? p1 : (s2 > s1 ? p2 : 'DRAW');
+
+    this.shadowRoot.getElementById('results-content').innerHTML =
+      '<div class="score-display">'
+      + '<div class="player-score"><span class="score-name">' + p1 + '</span><span class="score-num">' + s1 + '</span></div>'
+      + '<div class="score-divider">VS</div>'
+      + '<div class="player-score"><span class="score-name">' + p2 + '</span><span class="score-num">' + s2 + '</span></div></div>'
+      + '<div class="winner-ann">' + (champ === 'DRAW' ? 'DRAW!' : 'WINNER: ' + champ + '!') + '</div>'
+      + '<table><thead><tr><th>Round</th><th>Winner</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+}
+
+customElements.define('rps-game-page', RpsGamePage);

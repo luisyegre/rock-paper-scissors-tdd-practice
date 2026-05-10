@@ -1,6 +1,7 @@
 const appTemplate = document.createElement('template');
 appTemplate.innerHTML = `
   <style>
+    * { box-sizing: border-box; }
     :host {
       display: flex;
       flex-direction: column;
@@ -18,6 +19,8 @@ appTemplate.innerHTML = `
       border-bottom: 2px solid var(--border-color);
       box-shadow: 0 4px 20px rgba(0, 240, 255, 0.1);
       z-index: 10;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
     .brand {
       font-size: 1.5rem;
@@ -58,19 +61,47 @@ appTemplate.innerHTML = `
       flex-direction: column;
       align-items: center;
     }
+    .header-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
     @media (max-width: 900px) {
+      :host {
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+      }
+      header {
+        padding: 0.5rem;
+        justify-content: center;
+      }
+      .brand { font-size: 1.1rem; }
       .container {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 300px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: 1fr 280px;
+        overflow: hidden;
+        height: 100%;
       }
       .sidebar {
         border-right: none;
         border-top: 2px solid var(--border-color);
-        order: 2; /* chat goes to bottom on mobile */
+        order: 2;
+        overflow: hidden;
+        min-height: 0;
       }
       .main-content {
         padding: 1rem;
         order: 1;
+        overflow-y: auto;
+        min-height: 0;
+      }
+      .header-right {
+        justify-content: center;
+        width: 100%;
+        gap: 0.5rem;
       }
     }
   </style>
@@ -78,9 +109,9 @@ appTemplate.innerHTML = `
     <div class="brand">
       <slot name="header-logo">RPS ARENA</slot>
     </div>
-    <div style="flex: 1;"></div>
-    <slot name="header-info"></slot>
-    <div style="display:flex; gap:1rem; align-items:center; margin-left: 1rem;">
+    <div style="flex: 1; min-width: 10px;"></div>
+    <div class="header-right">
+      <slot name="header-info"></slot>
       <slot name="header-actions"></slot>
     </div>
   </header>

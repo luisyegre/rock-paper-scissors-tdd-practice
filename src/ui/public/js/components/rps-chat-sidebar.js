@@ -1,12 +1,16 @@
 const chatTemplate = document.createElement('template');
 chatTemplate.innerHTML = `
   <style>
+    * { box-sizing: border-box; }
     :host {
       display: flex;
       flex-direction: column;
+      flex: 1;
+      min-height: 0;
       height: 100%;
       background: transparent;
       font-family: 'Rajdhani', sans-serif;
+      overflow: hidden;
     }
     .chat-header {
       padding: 1.2rem 1rem;
@@ -56,14 +60,14 @@ chatTemplate.innerHTML = `
       flex: 1;
       padding: 0.7rem 0.9rem;
       font-size: 1rem;
-      border: 2px solid rgba(0, 240, 255, 0.3);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-left: 3px solid var(--accent);
       background: rgba(0, 0, 0, 0.6);
       color: var(--accent);
       font-family: 'Rajdhani', sans-serif;
       font-weight: 600;
       outline: none;
       transition: all 0.2s;
-      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
     }
     .chat-input-row input:focus { 
       border-color: var(--accent);
@@ -77,7 +81,7 @@ chatTemplate.innerHTML = `
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 2px;
-      border: 2px solid var(--accent);
+      border: 1px solid var(--accent);
       background: rgba(0, 240, 255, 0.1);
       color: var(--accent);
       cursor: pointer;
@@ -95,10 +99,10 @@ chatTemplate.innerHTML = `
       font-size: 1rem;
       line-height: 1.5;
       padding: 0.6rem 0.8rem;
-      border: 1px solid rgba(0, 240, 255, 0.2);
+      border: 1px solid rgba(0, 240, 255, 0.1);
+      border-left: 3px solid rgba(0, 240, 255, 0.5);
       background: rgba(0, 0, 0, 0.5);
       animation: msgIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
       font-weight: 600;
     }
     @keyframes msgIn {

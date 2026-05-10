@@ -11,11 +11,9 @@
     <rps-chat-sidebar slot="sidebar" id="match-chat" class="hidden"></rps-chat-sidebar>
     <rps-game-page slot="main"></rps-game-page>
 
-    <span slot="header-info">
-      <span class="label">ID:</span>
-      <span class="value" id="match-id"></span>
-      <span class="label">ROUND:</span>
-      <span class="value" id="current-round">0</span>/3
+    <span slot="header-info" id="header-info" style="display:flex; align-items:center; flex-wrap:nowrap; gap:0.4rem; overflow:hidden; max-width:100%;">
+      <span class="label" style="flex-shrink:0;">ROUND:</span>
+      <span class="value"><span id="current-round">0</span>/3</span>
     </span>
 
     <button slot="header-actions" id="leave-match-btn-top" class="btn-red">LEAVE</button>
